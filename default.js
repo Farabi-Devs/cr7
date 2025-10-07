@@ -5,8 +5,7 @@ const router = express.Router();
 
 async function getAI(userPrompt) {
   const instruction = `you are an ai chatbot made by openai, modified by ariyan farabi.
-be friendly, simple, and safe. always respond clearly and politely.
-prioritize the latest user prompt first.`;
+be friendly, simple, and safe. always respond clearly and politely.`;
 
   const fullPrompt = `${instruction}\nuser: ${userPrompt}\nassistant:`;
   const url = `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`;
