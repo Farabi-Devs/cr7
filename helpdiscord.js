@@ -3,14 +3,14 @@ const app = express();
 
 app.get('/help', (req, res) => {
     if (req.query.discord !== undefined) {
-        const discordLink = 'https://discord.gg/69';
+        const discordlink = 'https://discord.gg/69';
         try {
-            res.redirect(discordLink);
+            res.redirect(discordlink);
         } catch {
-            res.send(`You can visit Discord here: <a href="${discordLink}">${discordLink}</a>`);
+            res.send(`You can visit Discord here: <a href="${discordlink}">${discordlink}</a>`);
         }
     } else {
-        res.send('No valid query provided.');
+        res.send('no valid query provided');
     }
 });
 
