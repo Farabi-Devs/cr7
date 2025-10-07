@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^3.4.1"
+    "node-fetch": "^3"
   },
   "engines": {
     "node": ">=18"
