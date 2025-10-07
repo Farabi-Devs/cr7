@@ -1,7 +1,7 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
 
-app.get('/help', (req, res) => {
+router.get('/help', (req, res) => {
     if (req.query.discord !== undefined) {
         const discordlink = 'https://discord.gg/69';
         try {
@@ -14,7 +14,4 @@ app.get('/help', (req, res) => {
     }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`server running on port ${port}`);
-});
+module.exports = router;
