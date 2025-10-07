@@ -1,7 +1,7 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
 
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     const redirectlink = 'https://prompt-about.farabi.me/';
     try {
         res.redirect(redirectlink);
@@ -10,7 +10,4 @@ app.get('/', (req, res) => {
     }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`fallback server running on port ${port}`);
-});
+module.exports = router;
