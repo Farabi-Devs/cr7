@@ -25,36 +25,48 @@ router.get("/:prompt", async (req, res) => {
 
   // 🚫 Missing user check
   if (!user) {
-    return res.json({
-      success: false,
-      error: "please check farabi.me/howtouse. USER field is empty."
-    });
+    return res.send(
+      "please check farabi.me/howtouse. USER field is empty."
+    );
   }
 
   // 🚫 Invalid model check
   const allowedModels = ["openai", "normal", "roblox"];
   if (!allowedModels.includes(model)) {
-    return res.json({
-      success: false,
-      error:
-        "please check farabi.me/howtouse. free tiers only have model openai, normal, and roblox."
-    });
+    return res.send(
+      "please check farabi.me/howtouse. free tiers only have model openai, normal, and roblox."
+    );
   }
 
   // Restore memory
   const data = memory.get(user) || { history: [], lastActive: Date.now() };
   let history = data.history.slice(-MEMORY_LIMIT * 2);
 
-  // Base instruction
-  const instruction = `
+  // 🎯 Base instructions per model
+  let instruction = "";
+  if (model === "roblox") {
+    instruction = `
 You are a Roblox AI made by OpenAI, modified by Ariyan Farabi (Ariyxxnnn).
 Friendly, professional, Gen Z style. Always reply clearly and shorter.
 Rules:
 - Kid-safe, no swearing, no adult or violent content.
-- Talk about Roblox stuff only (features, avatars, badges, studio basics).
+- Talk about Roblox features, avatars, badges, and studio basics.
 - Avoid hacks, exploits, or unsafe links.
 - Use lowercase chill tone ("yo", "bro", "wbu", etc.).
 `;
+  } else if (model === "normal") {
+    instruction = `
+You are a normal AI assistant created by Ariyan Farabi (Ariyxxnnn).
+Speak clearly, friendly, and short. Use natural casual tone.
+Avoid dark or adult content. Be general, helpful, and safe.
+`;
+  } else if (model === "openai") {
+    instruction = `
+You are OpenAI’s original assistant but with Ariyan Farabi’s short, clear, friendly tone.
+Reply fast, helpful, and human-like.
+Avoid unnecessary long explanations or sensitive content.
+`;
+  }
 
   // Build chat history
   const chatHistoryText = history
@@ -86,15 +98,10 @@ Rules:
 
     memory.set(user, { history, lastActive: Date.now() });
 
-    res.json({
-      success: true,
-      user,
-      model,
-      reply: text,
-      memoryUsed: history.length / 2
-    });
+    // ✅ Only send the AI reply text
+    res.send(text);
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    res.send(`error: ${err.message}`);
   }
 });
 
