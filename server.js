@@ -6,11 +6,11 @@ import fallback from "./fallback.js";
 
 const app = express();
 
-// specific routes first
+// ✅ order matters — register API routes before fallback
 app.use("/helpdiscord", helpdiscord);
 app.use("/prompt", defaultRoute);
-app.use("/freeopenai", freeopenai); // ✅ added new route
-app.use(fallback); // fallback for everything else
+app.use("/freeopenai", freeopenai); // ✅ added correctly
+app.use(fallback); // fallback for unknown routes
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
