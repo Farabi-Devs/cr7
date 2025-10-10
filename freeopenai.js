@@ -38,11 +38,7 @@ router.get("/:prompt", async (req, res) => {
     );
   }
 
-  // Restore memory
-  const data = memory.get(user) || { history: [], lastActive: Date.now() };
-  let history = data.history.slice(-MEMORY_LIMIT * 2);
-
-  // 🎯 Base instructions per model
+  // === Select instruction based on model ===
   let instruction = "";
   if (model === "roblox") {
     instruction = `
@@ -50,25 +46,28 @@ You are a Roblox AI made by OpenAI, modified by Ariyan Farabi (Ariyxxnnn).
 Friendly, professional, Gen Z style. Always reply clearly and shorter.
 Rules:
 - Kid-safe, no swearing, no adult or violent content.
-- Talk about Roblox features, avatars, badges, and studio basics.
+- Talk about Roblox stuff only (features, avatars, badges, studio basics).
 - Avoid hacks, exploits, or unsafe links.
 - Use lowercase chill tone ("yo", "bro", "wbu", etc.).
 `;
   } else if (model === "normal") {
     instruction = `
-You are a normal AI assistant created by Ariyan Farabi (Ariyxxnnn).
-Speak clearly, friendly, and short. Use natural casual tone.
-Avoid dark or adult content. Be general, helpful, and safe.
+You are a friendly AI chat assistant by Ariyan Farabi (Ariyxxnnn).
+Speak in lowercase, chill Gen Z tone. Always be clear, kind, and short.
+Avoid adult or unsafe topics. Be general-purpose, but simple and fun.
 `;
   } else if (model === "openai") {
     instruction = `
-You are OpenAI’s original assistant but with Ariyan Farabi’s short, clear, friendly tone.
-Reply fast, helpful, and human-like.
-Avoid unnecessary long explanations or sensitive content.
+You are an OpenAI-based assistant modified by Ariyan Farabi (Ariyxxnnn).
+Be professional, chill, and short. Kid-safe, no adult or harmful topics.
+Keep lowercase responses unless needed. Always positive and helpful.
 `;
   }
 
-  // Build chat history
+  // === Memory restore ===
+  const data = memory.get(user) || { history: [], lastActive: Date.now() };
+  let history = data.history.slice(-MEMORY_LIMIT * 2);
+
   const chatHistoryText = history
     .map(msg => `${msg.isUser ? "User" : "Assistant"}: ${msg.text}`)
     .join("\n");
@@ -76,21 +75,21 @@ Avoid unnecessary long explanations or sensitive content.
   const fullPrompt = `${instruction}\n${chatHistoryText}\nUser: ${prompt}\nAssistant:`;
 
   try {
-    // Pollinations API call
+    // Pollinations API call (always openai)
     const url = `https://text.pollinations.ai/${encodeURIComponent(
       fullPrompt
-    )}?model=${model}`;
+    )}?model=openai`;
 
     const resp = await fetch(url, {
       method: "GET",
-      headers: { Accept: "text/plain", "Cache-Control": "no-cache" }
+      headers: { Accept: "text/plain", "Cache-Control": "no-cache" },
     });
 
     if (!resp.ok) throw new Error(`AI response failed (${resp.status})`);
     const text = (await resp.text()).trim();
     if (!text) throw new Error("Empty response");
 
-    // Update memory
+    // update memory
     history.push({ isUser: true, text: prompt });
     history.push({ isUser: false, text });
     if (history.length > MEMORY_LIMIT * 2)
@@ -98,7 +97,7 @@ Avoid unnecessary long explanations or sensitive content.
 
     memory.set(user, { history, lastActive: Date.now() });
 
-    // ✅ Only send the AI reply text
+    // 🟢 Only return reply text
     res.send(text);
   } catch (err) {
     res.send(`error: ${err.message}`);
