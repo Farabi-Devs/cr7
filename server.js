@@ -20,8 +20,5 @@ app.use("/prompt", defaultRoute);
 app.use("/", freeopenai); // now handles "/[PROMPT]" directly
 app.use(fallback); // fallback for everything else
 
-// Start server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
-});
+// Export the app for Vercel serverless
+export default app;
