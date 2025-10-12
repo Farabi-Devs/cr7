@@ -8,7 +8,7 @@ const memory = new Map();
 const MEMORY_LIMIT = 3; // last 3 user+AI pairs
 const MEMORY_TIMEOUT = 60 * 1000; // 1 minute
 
-// Clean expired memory
+// Cleanup expired memory every 30s
 setInterval(() => {
   const now = Date.now();
   for (const [key, data] of memory.entries()) {
@@ -25,7 +25,6 @@ router.get("/:prompt", async (req, res) => {
   const allowedModels = ["openai", "normal", "roblox"];
   if (!allowedModels.includes(model)) return res.send(`Invalid model. Choose one of: ${allowedModels.join(", ")}`);
 
-  // Instructions per model
   const instructions = {
     roblox: "Roblox AI, friendly, clear, kid-safe, lowercase & emojis. Reply only what user asked.",
     normal: "Friendly AI assistant, chill Gen Z tone. Clear, short, simple. Avoid adult topics.",
@@ -56,6 +55,7 @@ router.get("/:prompt", async (req, res) => {
     if (history.length > MEMORY_LIMIT * 2) history = history.slice(-MEMORY_LIMIT * 2);
     memory.set(user, { history, lastActive: Date.now() });
 
+    // Respond plain text
     res.send(text);
   } catch (err) {
     res.send(`error: ${err.message}`);
