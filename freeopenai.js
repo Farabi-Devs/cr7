@@ -3,10 +3,10 @@ import fetch from "node-fetch";
 
 const router = express.Router();
 
-// Memory store
+// Memory store (optional)
 const memory = new Map();
 const MEMORY_LIMIT = 3; // last 3 user+AI pairs
-const MEMORY_TIMEOUT = 60 * 1000; // 1 min
+const MEMORY_TIMEOUT = 60 * 1000; // 1 minute
 
 // Clean expired memory
 setInterval(() => {
@@ -16,23 +16,22 @@ setInterval(() => {
   }
 }, 30 * 1000);
 
-// === MAIN ENDPOINT ===
+// Public GET endpoint: /{prompt}?user=123&model=openai
 router.get("/:prompt", async (req, res) => {
-  const user = req.query.user;
   const prompt = req.params.prompt || "";
+  const user = req.query.user || `guest_${Math.floor(Math.random() * 100000)}`;
   const model = (req.query.model || "openai").toLowerCase();
 
-  if (!user) return res.send("please check farabi.me/howtouse. USER field is empty.");
-  if (!["openai","normal","roblox"].includes(model)) {
-    return res.send("please check farabi.me/howtouse. free tiers only have model openai, normal, and roblox.");
-  }
+  const allowedModels = ["openai", "normal", "roblox"];
+  if (!allowedModels.includes(model)) return res.send(`Invalid model. Choose one of: ${allowedModels.join(", ")}`);
 
-  // Short instructions per model
+  // Instructions per model
   const instructions = {
-    roblox: "Roblox AI, friendly, clear, short. Kid-safe. Talk Roblox only. Use lowercase & emojis. Reply only what user asked.",
-    normal: "Friendly AI assistant, chill Gen Z tone. Clear, short, simple. Avoid adult/unsafe topics. Reply only what user asked.",
-    openai: "OpenAI assistant, clear, short, professional but easy. Kid-safe. Reply only what user asked."
+    roblox: "Roblox AI, friendly, clear, kid-safe, lowercase & emojis. Reply only what user asked.",
+    normal: "Friendly AI assistant, chill Gen Z tone. Clear, short, simple. Avoid adult topics.",
+    openai: "OpenAI assistant, clear, short, professional but easy. Kid-safe."
   };
+
   const instruction = instructions[model];
 
   // Restore memory
@@ -43,7 +42,7 @@ router.get("/:prompt", async (req, res) => {
   const fullPrompt = `${instruction}\n${chatHistory}\nUser: ${prompt}\nAssistant:`;
 
   try {
-    // Pollinations API call
+    // Call Pollinations API
     const url = `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?model=openai`;
     const resp = await fetch(url, { headers: { Accept: "text/plain", "Cache-Control": "no-cache" } });
     if (!resp.ok) throw new Error(`AI response failed (${resp.status})`);
@@ -57,7 +56,6 @@ router.get("/:prompt", async (req, res) => {
     if (history.length > MEMORY_LIMIT * 2) history = history.slice(-MEMORY_LIMIT * 2);
     memory.set(user, { history, lastActive: Date.now() });
 
-    // Reply only text
     res.send(text);
   } catch (err) {
     res.send(`error: ${err.message}`);
